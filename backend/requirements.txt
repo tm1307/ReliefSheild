@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+asyncpg
+pgvector
+python-multipart
+imagehash
+Pillow
+httpx
+pytesseract
+spacy
+aiosqlite
+beautifulsoup4
