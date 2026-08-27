@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Score gauge animation */
+.score-circle {
+  transition: stroke-dashoffset 1.2s ease-out;
+}
+
+/* Fade-in animation for results */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Evidence graph tooltip */
+.graph-tooltip {
+  @apply absolute bg-slate-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg;
+  @apply pointer-events-none opacity-0 transition-opacity duration-200;
+  max-width: 240px;
+  z-index: 20;
+}
+
+.graph-node:hover .graph-tooltip {
+  @apply opacity-100;
+}
+
+/* Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
