@@ -124,7 +124,7 @@ function App() {
       </main>
 
       <footer className="border-t border-slate-200 mt-16 py-6 text-center text-xs text-slate-400">
-        ReliefShield · Omni_DisasterMgmt_18 · Team sleep_deprived
+        ReliefShield © {new Date().getFullYear()} — Advanced Fraud Detection
       </footer>
     </div>
   );
