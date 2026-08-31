@@ -18,13 +18,12 @@ export default function TrustScore({ score, summary, risk_level, recommendations
   }
 
   const getRiskBadge = (level) => {
-    switch (level?.toLowerCase()) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
+    const lvl = level?.toLowerCase() || '';
+    if (lvl.includes('critical')) return 'bg-red-100 text-red-800 border-red-200';
+    if (lvl.includes('high')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (lvl.includes('medium')) return 'bg-amber-100 text-amber-800 border-amber-200';
+    if (lvl.includes('low')) return 'bg-green-100 text-green-800 border-green-200';
+    return 'bg-blue-100 text-blue-800 border-blue-200';
   };
 
   useEffect(() => {
@@ -69,7 +68,7 @@ export default function TrustScore({ score, summary, risk_level, recommendations
         <h3 className={`text-xl font-bold ${color}`}>{label}</h3>
         {risk_level && (
           <span className={`text-xs px-3 py-1 rounded-full border font-bold uppercase tracking-wider ${getRiskBadge(risk_level)}`}>
-            {risk_level} Risk
+            {risk_level}
           </span>
         )}
       </div>

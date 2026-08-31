@@ -47,7 +47,10 @@ class ExtractionLayer:
         if not httpx or not BeautifulSoup:
             return url
         try:
-            response = httpx.get(url, timeout=10, follow_redirects=True)
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            response = httpx.get(url, timeout=10, follow_redirects=True, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
             for tag in soup(["script", "style", "nav", "footer", "header"]):
                 tag.decompose()

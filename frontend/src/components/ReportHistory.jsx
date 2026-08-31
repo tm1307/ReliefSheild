@@ -15,13 +15,12 @@ export default function ReportHistory({ history }) {
   }
 
   const getRiskColor = (level) => {
-    switch (level?.toLowerCase()) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
+    const lvl = level?.toLowerCase() || '';
+    if (lvl.includes('critical')) return 'bg-red-100 text-red-800 border-red-200';
+    if (lvl.includes('high')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (lvl.includes('medium')) return 'bg-amber-100 text-amber-800 border-amber-200';
+    if (lvl.includes('low')) return 'bg-green-100 text-green-800 border-green-200';
+    return 'bg-blue-100 text-blue-800 border-blue-200';
   };
 
   const getScoreColor = (score) => {
@@ -49,7 +48,7 @@ export default function ReportHistory({ history }) {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-slate-800">
-                    Appeal {report.appeal_id?.slice(0, 8) || `#${idx + 1}`}
+                    Appeal {report.appeal_id ? `#${report.appeal_id}` : `#${idx + 1}`}
                   </div>
                   <div className="text-xs text-slate-500">
                     {new Date().toLocaleTimeString()}
