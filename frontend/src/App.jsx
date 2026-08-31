@@ -16,10 +16,10 @@ function App() {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    fetch('/api/v1/stats')
-      .then(r => r.json())
-      .then(setStats)
-      .catch(() => {});
+    fetch('https://reliefsheild.onrender.com/api/v1/stats')
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(err => console.error('Failed to load stats', err));
   }, []);
 
   const handleSubmit = async (formData) => {
@@ -28,7 +28,7 @@ function App() {
     setReport(null);
 
     try {
-      const res = await fetch('/api/v1/appeals/', {
+      const res = await fetch('https://reliefsheild.onrender.com/api/v1/appeals/', {
         method: 'POST',
         body: formData,
       });
