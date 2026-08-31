@@ -1,67 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SubmitForm from './components/SubmitForm';
 import TrustScore from './components/TrustScore';
 import BreakdownCard from './components/BreakdownCard';
 import EvidenceGraph from './components/EvidenceGraph';
 import ExtractedEntities from './components/ExtractedEntities';
 import ShareReport from './components/ShareReport';
+import StatsBar from './components/StatsBar';
+import ReportHistory from './components/ReportHistory';
 
 function App() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/v1/stats')
+      .then(r => r.json())
+      .then(setStats)
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (formData) => {
     setLoading(true);
     setError(null);
     setReport(null);
+
     try {
-      const response = await fetch('/api/v1/appeals/', {
+      const res = await fetch('/api/v1/appeals/', {
         method: 'POST',
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+      
+      if (!res.ok) {
+        throw new Error('Server error');
       }
-      const data = await response.json();
+      
+      const data = await res.json();
       setReport(data);
-    } catch (err) {
-      console.error('Verification failed:', err);
-      setError('Could not reach the verification server. Showing demo report.');
-      setReport({
-        appeal_id: 0,
-        final_score: 45,
-        summary: 'This appeal has some concerns that warrant caution before donating. Flagged checks: Payment. We could not independently verify: Claim. Passed checks: Identity, Similarity.',
-        breakdown: [
-          { check: 'Identity', status: 'Verified', points_deducted: 0, details: 'Found in NGO Darpan mock registry: NGO12345' },
-          { check: 'Payment', status: 'Flagged', points_deducted: 30, details: "Payment ID 'random@ybl' appears to be a personal account not matching NGO name" },
-          { check: 'Similarity', status: 'Verified', points_deducted: 0, details: 'Text does not strongly match known scams.' },
-          { check: 'Claim', status: 'Unverifiable', points_deducted: 5, details: 'No specific verifiable claims extracted from the appeal text.' },
-        ],
-        evidence_graph: {
-          nodes: [
-            { id: 0, type: 'appeal', label: 'Submitted Appeal', status: 'neutral', detail: 'Demo appeal text...' },
-            { id: 1, type: 'organisation', label: 'Red Cross Society', status: 'verified', detail: 'Found in NGO Darpan registry' },
-            { id: 2, type: 'payment', label: 'random@ybl', status: 'flagged', detail: 'Personal account mismatch' },
-            { id: 3, type: 'source', label: 'Claim Analysis', status: 'unverifiable', detail: 'No verifiable claims found' },
-          ],
-          edges: [
-            { source: 0, target: 1, label: 'Claims to represent', status: 'verified' },
-            { source: 0, target: 2, label: 'Collects donations via', status: 'flagged' },
-            { source: 1, target: 2, label: 'Org ↔ Payment MISMATCH', status: 'flagged' },
-            { source: 0, target: 3, label: 'Claims', status: 'unverifiable' },
-          ],
-        },
-        extracted_entities: {
-          ORG: ['Red Cross Society'],
-          LOC: ['Kerala'],
-          PAYMENT_ID: ['random@ybl'],
-          DOMAIN: [],
-          CLAIM: [],
-        },
+      
+      setHistory(prev => {
+        const exists = prev.find(item => item.appeal_id === data.appeal_id);
+        if (exists) return prev;
+        return [data, ...prev];
       });
+    } catch (err) {
+      setError('Failed to connect to verification server. Please ensure the backend is running.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -79,6 +67,8 @@ function App() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        <StatsBar stats={stats} />
+
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-800">
             Verify Before You Donate
@@ -99,7 +89,12 @@ function App() {
 
         {report && (
           <div className="space-y-8 animate-fade-in">
-            <TrustScore score={report.final_score} summary={report.summary} />
+            <TrustScore 
+              score={report.final_score} 
+              summary={report.summary} 
+              risk_level={report.risk_level}
+              recommendations={report.recommendations}
+            />
 
             <ShareReport score={report.final_score} breakdown={report.breakdown} />
 
@@ -122,6 +117,8 @@ function App() {
             {report.extracted_entities && (
               <ExtractedEntities entities={report.extracted_entities} />
             )}
+            
+            <ReportHistory history={history} />
           </div>
         )}
       </main>

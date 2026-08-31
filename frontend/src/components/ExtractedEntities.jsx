@@ -9,6 +9,8 @@ export default function ExtractedEntities({ entities }) {
     PAYMENT_ID: 'bg-purple-100 text-purple-800 border-purple-200',
     DOMAIN: 'bg-orange-100 text-orange-800 border-orange-200',
     CLAIM: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    PHONE: 'bg-teal-100 text-teal-800 border-teal-200',
+    BANK_INFO: 'bg-indigo-100 text-indigo-800 border-indigo-200'
   };
 
   const hasEntities = Object.values(entities).some(arr => arr.length > 0);

@@ -34,7 +34,6 @@ class ExtractionLayer:
 
     @staticmethod
     def extract_text_from_image(image_bytes: bytes) -> str:
-        """Runs OCR on an uploaded screenshot."""
         try:
             img = Image.open(io.BytesIO(image_bytes))
             text = pytesseract.image_to_string(img)
@@ -45,23 +44,21 @@ class ExtractionLayer:
 
     @staticmethod
     def fetch_url_content(url: str) -> str:
-        """Fetches and extracts readable text from a URL."""
         if not httpx or not BeautifulSoup:
-            return url  # Fallback: treat URL as text
+            return url
         try:
             response = httpx.get(url, timeout=10, follow_redirects=True)
             soup = BeautifulSoup(response.text, "html.parser")
             for tag in soup(["script", "style", "nav", "footer", "header"]):
                 tag.decompose()
             text = soup.get_text(separator=" ", strip=True)
-            return text[:5000]  # Cap to avoid huge pages
+            return text[:5000]
         except Exception as e:
             print(f"URL fetch error: {e}")
             return url
 
     @staticmethod
     def extract_claims(text: str) -> List[str]:
-        """Extracts verifiable factual claims from text."""
         claims = []
         if not text:
             return claims
@@ -70,43 +67,58 @@ class ExtractionLayer:
             for match in matches:
                 claim_str = match.strip() if isinstance(match, str) else claim_type
                 claims.append(f"{claim_type}: {claim_str}")
-        return claims
+        return list(set(claims))
 
     @staticmethod
     def extract_entities(text: str) -> Dict[str, List[str]]:
-        """
-        Extracts Named Entities (NGOs, Locations) and Regex-based entities (UPI, Bank, Domains).
-        Also extracts verifiable claims.
-        """
         entities = {
-            "ORG": [],
-            "LOC": [],
-            "PAYMENT_ID": [],
-            "DOMAIN": [],
-            "CLAIM": [],
+            "ORG": set(),
+            "LOC": set(),
+            "PAYMENT_ID": set(),
+            "DOMAIN": set(),
+            "CLAIM": set(),
+            "PHONE": set(),
+            "BANK_INFO": set(),
         }
 
         if not text:
-            return entities
+            return {k: list(v) for k, v in entities.items()}
 
+        # UPI IDs
         upi_pattern = r"[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}"
-        entities["PAYMENT_ID"].extend(re.findall(upi_pattern, text))
+        entities["PAYMENT_ID"].update(re.findall(upi_pattern, text))
 
+        # Domains
         domain_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
-        entities["DOMAIN"].extend(re.findall(domain_pattern, text))
+        entities["DOMAIN"].update(re.findall(domain_pattern, text))
 
-        entities["CLAIM"] = ExtractionLayer.extract_claims(text)
+        # Indian Phone Numbers (+91 or just 10 digits starting with 6-9)
+        phone_pattern = r"(?:\+91[\s-]?)?[6789]\d{9}"
+        entities["PHONE"].update(re.findall(phone_pattern, text))
 
+        # Bank IFSC codes and account numbers
+        ifsc_pattern = r"[A-Z]{4}0[A-Z0-9]{6}"
+        entities["BANK_INFO"].update(re.findall(ifsc_pattern, text))
+        
+        acct_pattern = r"\b\d{9,18}\b"
+        # Only add likely account numbers if they appear near banking keywords
+        if re.search(r"(?i)(?:a/c|account|bank|ifsc)", text):
+            entities["BANK_INFO"].update(re.findall(acct_pattern, text))
+
+        # Claims
+        for c in ExtractionLayer.extract_claims(text):
+            entities["CLAIM"].add(c)
+
+        # NLP Entities
         if nlp:
             doc = nlp(text)
             for ent in doc.ents:
-                if ent.label_ == "ORG" and ent.text not in entities["ORG"]:
-                    entities["ORG"].append(ent.text)
+                if ent.label_ == "ORG":
+                    entities["ORG"].add(ent.text)
                 elif ent.label_ in ("GPE", "LOC"):
-                    if ent.text not in entities["LOC"]:
-                        entities["LOC"].append(ent.text)
+                    entities["LOC"].add(ent.text)
 
-        return entities
+        return {k: list(v) for k, v in entities.items()}
 
     @staticmethod
     def process_input(
@@ -114,9 +126,6 @@ class ExtractionLayer:
         text_content: Optional[str] = None,
         image_bytes: Optional[bytes] = None,
     ) -> Dict:
-        """
-        Takes raw input, normalises to text, and extracts entities.
-        """
         full_text = ""
 
         if input_type == "image" and image_bytes:

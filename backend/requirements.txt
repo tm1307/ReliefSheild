@@ -3,8 +3,6 @@ uvicorn[standard]
 pydantic
 pydantic-settings
 sqlalchemy
-asyncpg
-pgvector
 python-multipart
 imagehash
 Pillow
@@ -13,3 +11,6 @@ pytesseract
 spacy
 aiosqlite
 beautifulsoup4
+greenlet
+python-whois
+scikit-learn

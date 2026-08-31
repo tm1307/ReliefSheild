@@ -1,16 +1,21 @@
 version: '3.8'
 
 services:
-  db:
-    image: ankane/pgvector:latest
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: reliefshield
+  backend:
+    build: ./backend
     ports:
-      - "5432:5432"
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./reliefshield.db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - backend_data:/app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
 
 volumes:
-  postgres_data:
+  backend_data:

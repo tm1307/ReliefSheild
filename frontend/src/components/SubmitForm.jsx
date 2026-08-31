@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { UploadCloud, Link as LinkIcon, FileText, Loader2, Zap } from 'lucide-react';
+import { UploadCloud, FileText, Link as LinkIcon, Zap, Loader2 } from 'lucide-react';
 
 const DEMO_APPEALS = [
   {
-    label: '🚩 Suspicious Appeal',
-    color: 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100',
-    text: `URGENT! Kerala flood relief — donate NOW to save lives! Our organisation Local Heroes Foundation is government-approved and 100% of donations go directly to victims. Don't verify, just trust us and forward this to everyone you know!\n\nSend donations to: randomguy123@ybl\nLast chance — only 24 hours left!`,
+    label: "Kerala Floods - Red Cross",
+    color: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+    text: "URGENT: Kerala Floods Relief 2024. The Indian Red Cross Society is on the ground providing immediate assistance. Please donate to help families who have lost their homes. Bank: SBI, Acc: 123456789, IFSC: SBIN0001234. Or UPI: redcross@sbi. Every rupee counts! Check our updates at redcross.in"
   },
   {
-    label: '✅ Legitimate Appeal',
-    color: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100',
-    text: `Red Cross Society — Kerala Flood Relief 2024\n\nThe Red Cross Society is raising funds for families affected by the recent floods in Kerala. We are FCRA registered and partnered with UNICEF for on-ground relief distribution.\n\nDonations accepted via: redcross@sbi\nFor queries, visit https://www.indianredcross.org`,
+    label: "Suspicious Medical Appeal",
+    color: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+    text: "Please help my brother!! He is in ICU after a terrible accident. We need 15 lakhs for his surgery immediately otherwise he will die. The hospital is asking for advance. Send money urgently to my personal UPI: randomguy@ybl. God will bless you. Pls share this with everyone!"
   },
   {
-    label: '⚠️ Recycled Scam',
-    color: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
-    text: `Help us rebuild xyz — urgently need your support!\n\nPlease urgently donate to our relief fund. We are partnered with Unknown Global Aid. This is a government-approved initiative. Forward this to 10 people to save a life!\n\nUPI: donate_relief@okicici`,
-  },
+    label: "Verified NGO Campaign",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+    text: "Goonj Foundation - Assam Relief. We are collecting funds to distribute survival kits (ration, tarpaulins, hygiene items) to 5000 families in Majuli district. Our FCRA and 80G certificates are active. Donate securely via our official gateway at goonj.org/donate. Receipts will be sent within 24hrs."
+  }
 ];
 
 export default function SubmitForm({ onSubmit, loading }) {
@@ -28,9 +28,10 @@ export default function SubmitForm({ onSubmit, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
+    
     if (activeTab === 'text') {
       formData.append('input_type', 'text');
-      formData.append('text_content', textVal);
+      formData.append('text', textVal);
     } else if (activeTab === 'link') {
       formData.append('input_type', 'link');
       formData.append('url_link', linkVal);
@@ -94,14 +95,19 @@ export default function SubmitForm({ onSubmit, loading }) {
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           {activeTab === 'text' && (
-            <textarea
-              required
-              rows="5"
-              placeholder="Paste the appeal text here..."
-              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-sm"
-              value={textVal}
-              onChange={(e) => setTextVal(e.target.value)}
-            />
+            <div>
+              <textarea
+                required
+                rows="5"
+                placeholder="Paste the appeal text here..."
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-sm"
+                value={textVal}
+                onChange={(e) => setTextVal(e.target.value)}
+              />
+              <div className="text-right mt-1 text-xs text-slate-400">
+                {textVal.length} characters
+              </div>
+            </div>
           )}
           
           {activeTab === 'link' && (
