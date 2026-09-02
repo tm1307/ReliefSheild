@@ -27,28 +27,41 @@ function App() {
     setError(null);
     setReport(null);
 
-    try {
-      const res = await fetch('https://reliefsheild.onrender.com/api/v1/appeals/', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!res.ok) {
-        throw new Error('Server error');
+    const maxRetries = 8;
+    const delayMs = 5000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await fetch('https://reliefsheild.onrender.com/api/v1/appeals/', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!res.ok) {
+          if (res.status === 502 || res.status === 503) {
+            throw new Error('cold_start');
+          }
+          throw new Error('server_error');
+        }
+        
+        const data = await res.json();
+        setReport(data);
+        setHistory(prev => {
+          const exists = prev.find(item => item.appeal_id === data.appeal_id);
+          if (exists) return prev;
+          return [data, ...prev].slice(0, 5);
+        });
+        setLoading(false);
+        return; // Success
+      } catch (err) {
+        if (err.message === 'server_error' || attempt === maxRetries) {
+          setError('Failed to connect to verification server. Please ensure the backend is running.');
+          setLoading(false);
+          return;
+        }
+        // If it's a cold start or network error, wait and retry silently
+        await new Promise(resolve => setTimeout(resolve, delayMs));
       }
-      
-      const data = await res.json();
-      setReport(data);
-      
-      setHistory(prev => {
-        const exists = prev.find(item => item.appeal_id === data.appeal_id);
-        if (exists) return prev;
-        return [data, ...prev];
-      });
-    } catch (err) {
-      setError('Failed to connect to verification server. Please ensure the backend is running.');
-    } finally {
-      setLoading(false);
     }
   };
 
