@@ -54,9 +54,11 @@ class SimilarityModule:
     ]
 
     EMOTIONAL_MANIPULATION_WORDS = [
-        "dying", "starving", "homeless", "orphan", "crying", "bleeding",
-        "suffering", "desperate", "hopeless", "helpless", "abandoned",
-        "neglected", "screaming", "begging", "devastated", "shattered",
+        "dying", "die", "dead", "death", "starving", "starve", "homeless",
+        "orphan", "orphans", "crying", "bleeding", "suffering", "suffer",
+        "desperate", "hopeless", "helpless", "abandoned", "neglected",
+        "screaming", "begging", "devastated", "shattered", "urgent",
+        "urgently", "immediately", "tonight", "last chance", "save a life",
     ]
 
     _vectorizer = None

@@ -98,7 +98,15 @@ async def submit_appeal(
     await db.commit()
 
     # Step 2: Run Verification Modules
-    org_name = entities["ORG"][0] if entities["ORG"] else ""
+    org_name = ""
+    if entities["ORG"]:
+        for candidate in entities["ORG"]:
+            check = IdentityModule.verify_organisation(candidate)
+            if check["status"] == "Verified":
+                org_name = candidate
+                break
+        if not org_name:
+            org_name = max(entities["ORG"], key=len)
     payment_id = entities["PAYMENT_ID"][0] if entities["PAYMENT_ID"] else ""
     domains = entities["DOMAIN"]
     phones = entities.get("PHONE", [])
